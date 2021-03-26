@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Accuweather</string>
+    <string name="celsius_degree">℃</string>
+    <string name="degree">°</string>
+    <string name="air_quality_index_main">ИКВ</string>
+    <string name="detail_button_title">Подробнее ⟩</string>
+    <string name="text_separator">•</string>
+    <string name="ok">OK</string>
+
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
+    <string name="locatio_alert_explanations">We need your GPS location to show Near Places around you.</string>
+    <string name="mock">--</string>
+    <string name="settings">Settings</string>
+    <string name="refresh">refresh</string>
+    <string name="getting_location">Определение местоположения…</string>
+    <string name="dialog_cancel">Отмена</string>
+    <string name="location_settings">Настройки местоположения</string>
+    <string name="location_settings_message">Определение местоположения отключено. Перейти в меню настроек?</string>
+    <string name="location_settings_button">Настройки</string>
+    <string name="getting_data_from_server">Получение данных с сервера...</string>
+    <string name="communication_error">Ошибка в получении данных.</string>
+    <string name="today">сегодня</string>
+    <string name="tomorov">завтра</string>
+</resources>
