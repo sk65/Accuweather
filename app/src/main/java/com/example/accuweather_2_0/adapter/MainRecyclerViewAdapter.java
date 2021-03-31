@@ -37,10 +37,8 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         return new ViewHolder(view);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Log.i("dev", "Adapter onBindViewHolder todayWeatherDesc.setTemp");
         holder.todayWeatherDesc.setText(model.get(position).getDay().getIconPhrase());
         holder.dayOfWeek.setText(Utils.getCurrentDay(context, model.get(position).getDate(), position));
         holder.temperatureHolder.setText(Utils.getTemperatureRange(model.get(position).getTemperature(), context));

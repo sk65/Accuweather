@@ -1,7 +1,7 @@
-package com.example.accuweather_2_0.contract;
+package com.example.accuweather_2_0;
 
 
-import com.example.accuweather_2_0.model.MainScreenModel;
+import com.example.accuweather_2_0.model.screen.MainScreenModel;
 
 public interface MainFragmentContract {
     interface View {
@@ -12,9 +12,5 @@ public interface MainFragmentContract {
         void updateMainScreenUI(MainScreenModel mainScreenModel);
 
         void openDetailsFragment();
-    }
-
-    interface Model {
-        void requestData();
     }
 }

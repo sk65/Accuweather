@@ -1,64 +1,39 @@
 package com.example.accuweather_2_0.presenter;
 
 import android.content.Context;
-import android.os.Looper;
-import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-
-import com.example.accuweather_2_0.App;
-import com.example.accuweather_2_0.contract.MainActivityContract;
+import com.example.accuweather_2_0.SharedPreferencesManager;
+import com.example.accuweather_2_0.MainActivityContract;
 import com.example.accuweather_2_0.dao.WeatherRepository;
 import com.example.accuweather_2_0.dao.WeatherRepositoryImpl;
-import com.example.accuweather_2_0.model.MainScreenModel;
+import com.example.accuweather_2_0.model.screen.DetailsScreenModel;
+import com.example.accuweather_2_0.model.screen.MainScreenModel;
+import com.example.accuweather_2_0.view.fragment.DetailsFragment;
 import com.example.accuweather_2_0.view.fragment.MainFragment;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
-import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class MainActivityPresenter implements MainActivityContract.Presenter {
     private final MainActivityContract.View view;
     private final WeatherRepository weatherRepository;
-    //location
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
-    private LocationRequest locationRequest;
-
 
     public MainActivityPresenter(MainActivityContract.View view) {
         this.view = view;
-        weatherRepository = new WeatherRepositoryImpl();
+        weatherRepository = new WeatherRepositoryImpl(this);
+    }
+
+    @Override
+    public void updateLocationAndWeatherData() {
+        view.showLocationUpdateDialog();
+        weatherRepository.updateLocationAndWeatherData();
     }
 
     @Override
     public void updateWeatherData() {
-        Context context = view.getContext();
-        if (ActivityCompat.checkSelfPermission(context, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(context, ACCESS_COARSE_LOCATION) != PERMISSION_GRANTED) {
-            Log.i("dev", "MainPresenter permissions denied");
-            return;
-        }
-        view.showLocationUpdateDialog();
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-        createLocationCallback();
-        createLocationRequest();
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback, Looper.myLooper());
+        view.showNetworkUpdateDialog();
+        weatherRepository.updateWeatherData();
     }
 
     @Override
@@ -68,18 +43,19 @@ public class MainActivityPresenter implements MainActivityContract.Presenter {
 
     @Override
     public void stopUpdatesLocation() {
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        weatherRepository.stopUpdatesLocation();
         view.cancelLocationUpdateDialog();
     }
 
     @Override
-    public void onDataUpdateSuccessful(MainScreenModel mainScreenModel) {
+    public void onDataUpdateSuccessful(MainScreenModel mainScreenModel, DetailsScreenModel detailsScreenModel) {
         view.cancelNetworkUpdateDialog();
         List<Fragment> fragments = view.getSupportFragmentManager().getFragments();
         MainFragment mainFragment = (MainFragment) fragments.get(0);
+        DetailsFragment detailsFragment = (DetailsFragment) fragments.get(1);
         mainFragment.getPresenter().updateMainScreenUI(mainScreenModel);
+        detailsFragment.getPresenter().updateMainScreenUI(detailsScreenModel);
     }
-
 
     @Override
     public void onDataUpdateFailure(String massage) {
@@ -87,29 +63,29 @@ public class MainActivityPresenter implements MainActivityContract.Presenter {
         view.onResponseFailure(massage);
     }
 
-    private void requestWeatherDataFromServer() {
-        view.showLocationUpdateDialog();
-        weatherRepository.requestDataFromServer(this);
+    @Override
+    public Context getContext() {
+        return view.getContext();
+    }
+
+    @Override
+    public void cancelLocationUpdateDialog() {
+        view.cancelLocationUpdateDialog();
+    }
+
+    @Override
+    public void refreshUI() {
+        MainScreenModel mainScreenModel = SharedPreferencesManager.getInstance().getMainScreenModel();
+        DetailsScreenModel detailsScreenModel = SharedPreferencesManager.getInstance().geDetailsScreenModel();
+        if (mainScreenModel != null && detailsScreenModel != null) {
+            onDataUpdateSuccessful(mainScreenModel, detailsScreenModel);
+        }
 
     }
 
-    private void createLocationCallback() {
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NotNull LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                App.currentLocation = locationResult.getLastLocation();
-                requestWeatherDataFromServer();
-                fusedLocationClient.removeLocationUpdates(locationCallback);
-                view.cancelLocationUpdateDialog();
-            }
-        };
+    @Override
+    public void showNetworkProgressDialog() {
+        view.showNetworkUpdateDialog();
     }
 
-    private void createLocationRequest() {
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
-        locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
 }

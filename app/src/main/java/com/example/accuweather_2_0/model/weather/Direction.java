@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class Direction {
     @SerializedName("English")
-    private String direction;
+    private String value;
 
-    public String getDirection() {
-        return direction;
+    public String getValue() {
+        return value;
     }
 }

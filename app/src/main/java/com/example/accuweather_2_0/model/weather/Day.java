@@ -9,28 +9,25 @@ public class Day {
     @SerializedName("IconPhrase")
     private String iconPhrase;
 
-    @SerializedName("PrecipitationType")
-    private String precipitationType;
+    @SerializedName("Wind")
+    public Wind wind;
+
+    @SerializedName("RainProbability")
+    public int rainProbability;
 
     public int getIcon() {
         return icon;
-    }
-
-    public Day() {
-    }
-
-    public Day(int icon, String iconPhrase, String precipitationType) {
-        this.icon = icon;
-        this.iconPhrase = iconPhrase;
-        this.precipitationType = precipitationType;
     }
 
     public String getIconPhrase() {
         return iconPhrase;
     }
 
-    public String getPrecipitationType() {
-        return precipitationType;
+    public int getRainProbability() {
+        return rainProbability;
     }
 
+    public Wind getWind() {
+        return wind;
+    }
 }

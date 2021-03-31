@@ -1,11 +1,12 @@
-package com.example.accuweather_2_0.contract;
+package com.example.accuweather_2_0;
 
 
 import android.content.Context;
 
 import androidx.fragment.app.FragmentManager;
 
-import com.example.accuweather_2_0.model.MainScreenModel;
+import com.example.accuweather_2_0.model.screen.DetailsScreenModel;
+import com.example.accuweather_2_0.model.screen.MainScreenModel;
 
 public interface MainActivityContract {
     interface View {
@@ -24,24 +25,29 @@ public interface MainActivityContract {
         void cancelNetworkUpdateDialog();
 
         void onResponseFailure(String message);
+
     }
 
     interface Presenter {
+        void updateLocationAndWeatherData();
+
         void updateWeatherData();
 
         void requestPermissions();
 
         void stopUpdatesLocation();
 
-        void onDataUpdateSuccessful(MainScreenModel mainScreenModel);
-
+        void onDataUpdateSuccessful(MainScreenModel mainScreenModel, DetailsScreenModel detailsScreenModel);
 
         void onDataUpdateFailure(String massage);
+
+        Context getContext();
+
+        void cancelLocationUpdateDialog();
+
+        void refreshUI();
+
+        void showNetworkProgressDialog();
     }
 
-    public interface Model {
-        void getData();
-
-        void updateLocation();
-    }
 }

@@ -6,5 +6,13 @@ public class Wind {
     @SerializedName("Speed")
     private Speed speed;
     @SerializedName("Direction")
-    public Direction direction;
+    private Direction direction;
+
+    public Speed getSpeed() {
+        return speed;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
 }

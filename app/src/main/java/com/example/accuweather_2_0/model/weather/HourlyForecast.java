@@ -24,7 +24,7 @@ public class HourlyForecast {
     private Wind wind;
 
     @SerializedName("Ceiling")
-    public Ceiling ceiling;
+    private Ceiling ceiling;
 
     @SerializedName("UVIndex")
     private int uVIndex;

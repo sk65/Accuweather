@@ -1,9 +1,8 @@
 package com.example.accuweather_2_0.presenter;
 
-import android.util.Log;
-
-import com.example.accuweather_2_0.contract.MainFragmentContract;
-import com.example.accuweather_2_0.model.MainScreenModel;
+import com.example.accuweather_2_0.MainFragmentContract;
+import com.example.accuweather_2_0.model.screen.MainScreenModel;
+import com.example.accuweather_2_0.view.MainActivity;
 
 
 public class MainFragmentPresenter implements MainFragmentContract.Presenter {
@@ -15,13 +14,12 @@ public class MainFragmentPresenter implements MainFragmentContract.Presenter {
 
     @Override
     public void updateMainScreenUI(MainScreenModel mainScreenModel) {
-        Log.i("dev", "MainFragmentPresenter updateMainScreenUI + mainSkrean " + mainScreenModel.getCards().get(0).toString());
         view.updateMainScreenUI(mainScreenModel);
     }
 
     @Override
     public void openDetailsFragment() {
-
+        MainActivity.viewPager.setCurrentItem(1);
     }
 
 }

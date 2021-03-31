@@ -16,19 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
-    private List<Fragment> fragments;
-    private final Context mContext;
+    private final List<Fragment> fragments;
 
-    public SectionsPagerAdapter(Context context, @NonNull FragmentManager fm, int behavior) {
+
+    public SectionsPagerAdapter( @NonNull FragmentManager fm, int behavior) {
         super(fm, behavior);
-
         Fragment mainFragment = new MainFragment();
         Fragment detailsFragment = new DetailsFragment();
-        Log.i("dev", "SectionsPagerAdapter");
         fragments = new ArrayList<>(2);
         fragments.add(mainFragment);
         fragments.add(detailsFragment);
-        mContext = context;
     }
 
     @NonNull

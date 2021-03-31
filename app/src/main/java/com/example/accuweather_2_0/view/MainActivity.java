@@ -1,20 +1,21 @@
-package com.example.accuweather_2_0.view.activity;
+package com.example.accuweather_2_0.view;
 
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -25,31 +26,42 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.accuweather_2_0.BuildConfig;
 import com.example.accuweather_2_0.R;
 import com.example.accuweather_2_0.adapter.SectionsPagerAdapter;
-import com.example.accuweather_2_0.contract.MainActivityContract;
+import com.example.accuweather_2_0.MainActivityContract;
 import com.example.accuweather_2_0.presenter.MainActivityPresenter;
+import com.example.accuweather_2_0.utils.DialogUtils;
 import com.google.android.material.snackbar.Snackbar;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.NETWORK_PROVIDER;
 
 public class MainActivity extends AppCompatActivity implements MainActivityContract.View {
+
     private MainActivityContract.Presenter presenter;
+    public static final int LOCATION_SETTINGS_REQUEST_CODE = 52456;
     private static final int REQUEST_LOCATION_PERMISSIONS_REQUEST_CODE = 34;
     private final String[] locationPermissions = new String[]{ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION};
     private SwipeRefreshLayout refreshLayout;
     private ProgressDialog locationProgressDialog;
     private ProgressDialog networkProgressDialog;
-
+    public static ViewPager viewPager;
+    private AlertDialog.Builder locationSettingsDialog;
+    private boolean refresh;
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initUI();
         presenter = new MainActivityPresenter(this);
-        updateWeatherData();
+        if (savedInstanceState == null) {
+            updateWeatherData();
+        } else {
+            presenter.refreshUI();
+        }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -70,48 +82,43 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
     private void initUI() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        // build locationProgressDialog
-        locationProgressDialog = new ProgressDialog(this);
-        locationProgressDialog.setMessage(getString(R.string.getting_location));
-        locationProgressDialog.setCancelable(false);
-        locationProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.dialog_cancel),
-                (dialogInterface, i) -> presenter.stopUpdatesLocation());
-
-        // build networkProgressDialog
-        networkProgressDialog = new ProgressDialog(this);
-        networkProgressDialog.setMessage(getString(R.string.getting_data_from_server));
-        networkProgressDialog.setCancelable(false);
+        networkProgressDialog = DialogUtils.buildNetworkProgressDialog(this);
+        locationProgressDialog = DialogUtils.buildLocationProgressDialog(this, presenter);
+        locationSettingsDialog = DialogUtils.buildLocationSettingsDialog(this);
 
 
         // build refreshLayout
         refreshLayout = findViewById(R.id.srl_mainActivity_mainContainer);
         refreshLayout.setOnRefreshListener(() -> {
+            refresh = true;
             updateWeatherData();
             refreshLayout.setRefreshing(false);
         });
 
         // build viewPager
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(
-                this,
                 getSupportFragmentManager(),
                 FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
 
-        ViewPager viewPager = findViewById(R.id.viewPager_mainActivity);
+        viewPager = findViewById(R.id.viewPager_mainActivity);
         viewPager.setAdapter(sectionsPagerAdapter);
     }
 
     private void updateWeatherData() {
         if (checkPermissions()) {
-            Log.i("dev", "MainActivity  updateLocation() !checkPermissions()");
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ||
-                    locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                presenter.updateWeatherData();
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            if (locationManager.isProviderEnabled(NETWORK_PROVIDER) ||
+                    locationManager.isProviderEnabled(GPS_PROVIDER)) {
+                if (!refresh) {
+                    presenter.updateLocationAndWeatherData();
+                } else {
+                    presenter.updateWeatherData();
+                    refresh = false;
+                }
             } else {
-                showLocationSettingsDialog();
+                locationSettingsDialog.show();
             }
         } else {
-            Log.i("dev", "MainActivity  updateLocation() else");
             requestPermissions();
         }
     }
@@ -121,16 +128,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
                 ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
     }
 
-    private void showLocationSettingsDialog() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        alertDialog.setTitle(R.string.location_settings);
-        alertDialog.setMessage(R.string.location_settings_message);
-        alertDialog.setPositiveButton(R.string.location_settings_button, (dialog, which) -> {
-            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            startActivity(intent);
-        });
-        alertDialog.setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.cancel());
-        alertDialog.show();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == LOCATION_SETTINGS_REQUEST_CODE) {
+            updateWeatherData();
+        }
     }
 
     private void requestLocationPermissions() {
@@ -152,12 +155,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
 
     @Override
     public void requestPermissions() {
-        Log.i("dev", "Main Activity requestPermissions()");
         boolean shouldProvideRationale =
                 ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.ACCESS_FINE_LOCATION);
         if (shouldProvideRationale) {
-            Log.i("dev", "Main Activity requestPermissions() shouldProvideRationale");
             Snackbar.make(
                     findViewById(R.id.srl_mainActivity_mainContainer),
                     R.string.permission_rationale,
@@ -165,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityContr
                     .setAction(R.string.ok, view -> requestLocationPermissions())
                     .show();
         } else {
-            Log.i("dev", "Main Activity requestPermissions() else");
             requestLocationPermissions();
         }
     }

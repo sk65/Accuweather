@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 
 public class DailyForecast {
@@ -12,14 +13,26 @@ public class DailyForecast {
 
     @SerializedName("Temperature")
     private Temperature temperature;
-
+    @SerializedName("RealFeelTemperature")
+    private RealFeelTemperature realFeelTemperature;
     @SerializedName("Day")
     private Day day;
+    @SerializedName("AirAndPollen")
+    private List<AirAndPollen> airAndPollen;
+    @SerializedName("Sun")
+    private Sun sun;
 
-    public DailyForecast() {
+    public RealFeelTemperature getRealFeelTemperature() {
+        return realFeelTemperature;
     }
 
+    public List<AirAndPollen> getAirAndPollen() {
+        return airAndPollen;
+    }
 
+    public Sun getSun() {
+        return sun;
+    }
 
     public Date getDate() {
         return date;

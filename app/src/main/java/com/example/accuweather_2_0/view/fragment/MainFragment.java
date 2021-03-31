@@ -1,7 +1,6 @@
 package com.example.accuweather_2_0.view.fragment;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.accuweather_2_0.R;
 import com.example.accuweather_2_0.adapter.MainRecyclerViewAdapter;
-import com.example.accuweather_2_0.contract.MainFragmentContract;
-import com.example.accuweather_2_0.model.MainScreenModel;
+import com.example.accuweather_2_0.MainFragmentContract;
+import com.example.accuweather_2_0.model.screen.MainScreenModel;
 import com.example.accuweather_2_0.presenter.MainFragmentPresenter;
 
 import java.util.LinkedList;
@@ -30,12 +29,12 @@ public class MainFragment extends Fragment implements MainFragmentContract.View 
     private TextView todayTemperatureTextView;
     private TextView todayDescriptionTextView;
     private TextView todayAiQualityIndexTextView;
+    private TextView cityHolderTextView;
     private RecyclerView recyclerView;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        Log.i("dev", "MainFragment onCreate");
         super.onCreate(savedInstanceState);
         presenter = new MainFragmentPresenter(this);
 
@@ -50,7 +49,7 @@ public class MainFragment extends Fragment implements MainFragmentContract.View 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        cityHolderTextView = view.findViewById(R.id.textView_mainFragment_cityHolder);
         todayTemperatureTextView = view.findViewById(R.id.textView_mainFragment_todayTemperature);
         todayDescriptionTextView = view.findViewById(R.id.textView_mainFragment_todayDescription);
         todayAiQualityIndexTextView = view.findViewById(R.id.textView_mainFragment_today_airQualityIndex);
@@ -69,9 +68,11 @@ public class MainFragment extends Fragment implements MainFragmentContract.View 
         todayTemperatureTextView.setText(mainScreenModel.getTodayTemperature());
         todayDescriptionTextView.setText(mainScreenModel.getTodayDescription());
         todayAiQualityIndexTextView.setText(mainScreenModel.getTodayAiQualityIndex());
-
+        cityHolderTextView.setText(mainScreenModel.getCity());
         MainRecyclerViewAdapter viewAdapter = new MainRecyclerViewAdapter(getContext(), mainScreenModel.getCards());
         recyclerView.setAdapter(viewAdapter);
+
+
     }
 
     public MainFragmentContract.Presenter getPresenter() {
